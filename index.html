@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Aven RGB Singularity Cooler</title>
+  <link rel="preload" href="Aven_RGB_Singularity_Cooler.mp4" as="video" type="video/mp4">
+  <style>
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      overflow: hidden;
+      background: #000;
+    }
+
+    video {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+    }
+  </style>
+</head>
+<body>
+  <video
+    id="singularity"
+    autoplay
+    muted
+    loop
+    playsinline
+    preload="auto"
+    disablepictureinpicture
+  >
+    <source src="Aven_RGB_Singularity_Cooler.mp4" type="video/mp4">
+  </video>
+
+  <script>
+    const video = document.getElementById("singularity");
+    video.muted = true;
+
+    const keepPlaying = () => {
+      if (video.paused) {
+        video.play().catch(() => {});
+      }
+    };
+
+    video.addEventListener("canplay", keepPlaying);
+    document.addEventListener("visibilitychange", keepPlaying);
+    window.addEventListener("pageshow", keepPlaying);
+    keepPlaying();
+  </script>
+</body>
+</html>
