@@ -1,9 +1,9 @@
-# Aven Prismatic Core Cooler — V9 Living Prism
+# Aven Prismatic Core Cooler — V10 Crystal Focus
 
-A seamless 480×480 cooler companion to Aven's Prismatic Core desktop wallpaper. V9 adds baked aurora currents, layered rising particles, moving crystal energy, facet glints, and illuminated floor ripples while preserving OLED-black contrast.
+V10 reframes the Prismatic Core for the 480×480 Corsair iCUE TITAN LCD: the crystal is centred and brought forward, with selective highlight bloom and richer colour while preserving the V9 Living Prism motion layers and OLED-black contrast.
 
 ## Live page
 
 https://tracedicky.github.io/aven-rgb-singularity-cooler/
 
-The live player uses an iCUE-compatible VP8/WebM direct-data source with no canvas animation, overlays, or continuous rendering scripts.
+The live player uses an iCUE-compatible VP8/WebM direct-data source. All visual effects are baked into the video, with no live canvas rendering.
