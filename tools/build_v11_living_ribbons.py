@@ -1,298 +1,204 @@
-þº(·úk¡ø¥zX§{ßÝzÿçºYOz¹¢²È¨×§‰çHÈKÝ\Ü‹Øš[‹Ù[ˆ]ÛŒÂˆˆˆZ[ŒLH]š[™ÈšX˜›ÛœÈÚ[H™\Ù\š[™ÈHŒLÜž\Ý[›ØÝ\È™X]Y[‚‚•H˜XÚÙÜ›Ý[™šX˜›ÛœÈ™XÙZ]™HH\ÙK[ØÚÙY\]ZY\ÜXÙ[Y[[™ÝXB˜]™[[™ÈÛÛÝ\‹ØØ]\ÝXÈØ]™\ËˆHÜž\Ý[[™Y\Ý[\™H^XÚ]Bœ›ÝXÝYÛÈZ\ˆŒLšY[]H\È[˜Ú[™ÙY‚ˆˆˆ‚‚™œ›ÛH×Ù]\™W×È[\Ü[››Ý][ÛœÂ‚š[\Ü\™Ü\œÙBš[\ÜÛÛÜœÞ\Âš[\ÜX]™œ›ÛH]Xˆ[\Ü]‚š[\Ü[\H\Èœ™œ›ÛHS[\Ü[XYÙK[XYÙPÚÜË[XYÙQ˜]Ë[XYÙQš[\‚‚™œ›ÛHZ[ÝŒLØÜž\Ý[Ù›ØÝ\È[\ÜRQÒÒQZ[Ü\XÛ\Ë™[™\—Ùœ˜[YB‚‚•UHHX]]B‚‚™YˆÜÛÙÜšX˜›Û—ÛX\ÚÊ™Y™\™[˜ÙNˆ[XYÙK’[XYÙJHOˆ[XYÙK’[XYÙN‚ˆˆˆ‘š[™HØ]\˜]YšX˜›Ûˆ^\™H[™›ÝXÝH›Ü™YÜ›Ý[™Üž\Ý[ˆˆˆ‚ˆÝˆHœ˜\Ø\œ˜^J™Y™\™[˜ÙK˜ÛÛ™\
-’ÕˆŠK\O[œ™›Ø]ÌŠBˆØ]\˜][ÛˆHÝ–Ë‹‹‹WBˆ˜[YHHÝ–Ë‹‹‹—B‚ˆÚ›ÛXHHœ˜Û\
+#!/usr/bin/env python3
+"""Build V11 Living Ribbons while preserving the V10 Crystal Focus treatment.
 
-Ø]\˜][ÛˆH‹Œ
-HÈLŒŒKŒ
-BˆYÚHœ˜Û\
+The background ribbons receive a phase-locked liquid displacement and subtle
+travelling colour/caustic waves.  The crystal and pedestal are explicitly
+protected so their V10 fidelity is unchanged.
+"""
 
-˜[YHHNŒ
-HÈL‹ŒŒKŒ
-Bˆ[HHœœÝÙ\ŠÚ›ÛXH
-ˆYÚÌŠB‚ˆÈÙY\H™X]Y[[ˆH™X\ˆ[™\™ÞHšY[]Ø^Hœ›ÛHHY\Ý[‚ˆÙ[ÛY]žHH[XYÙK›™]Ê“‹
-ÒQRQÒ
-KMJBˆ˜]ÈH[XYÙQ˜]Ë‘˜]ÊÙ[ÛY]žJBˆ˜]Ëœ™XÝ[™ÛJ
-ŒÒQRQÒ
-Kš[L
-Bˆ˜]ËœÛYÛÛŠˆÊÌÊK
-ÌËL
-K
-ÌŽKÌ
-K
-ÌŒ‹Î
-Kˆ
-ÌJK
-MMÎJK
-MMËMÍ
-WKˆš[Lˆ
-BˆÙ[ÛY]žHHÙ[ÛY]žK™š[\Š[XYÙQš[\‹‘Ø]\ÜÚX[›\ŠËŒ
-JBˆ[H
-Hœ˜\Ø\œ˜^JÙ[ÛY]žK\O[œ™›Ø]ÌŠHÈMKŒ‚ˆÈHÛÙ›\ˆ™]™[ÈÝ][Ý]YÙ\ÈÚ[H™]Z[š[™ÈœšYÚš[[Y[]Z[‚ˆX\ÚÈH[XYÙK™œ›ÛX\œ˜^JœZ[
-œ˜Û\
-[H
-ˆMKŒMJJK“ŠBˆ™]\›ˆX\ÚË™š[\Š[XYÙQš[\‹‘Ø]\ÜÚX[›\ŠËŒŠJB‚‚™YˆØš[[™X\—ÜØ[\J™ØŽˆœ›™\œ˜^KÛÝ\˜ÙWÞˆœ›™\œ˜^KÛÝ\˜ÙWÞNˆœ›™\œ˜^JHOˆœ›™\œ˜^N‚ˆˆˆ”Ø[\H[ˆ‘Ðˆœ˜[YH›ÝYÚHÛX[Û[ÛÝ\ÜXÙ[Y[šY[ˆˆˆ‚ˆÛÝ\˜ÙWÞHœ˜Û\
-ÛÝ\˜ÙWÞŒÒQHKŒJBˆÛÝ\˜ÙWÞHHœ˜Û\
-ÛÝ\˜ÙWÞKŒRQÒHKŒJB‚ˆHœ™›ÛÜŠÛÝ\˜ÙWÞ
-K˜\Ý\Jœš[ÌŠBˆLHœ™›ÛÜŠÛÝ\˜ÙWÞJK˜\Ý\Jœš[ÌŠBˆHHœ›Z[š[][J
-ÈKÒQHJBˆLHHœ›Z[š[][JL
-ÈKRQÒHJBˆÞH
-ÛÝ\˜ÙWÞH
-VË‹‹‹›Û™WBˆÞHH
-ÛÝ\˜ÙWÞHHL
-VË‹‹‹›Û™WB‚ˆÜH™Ø–ÞLH
-ˆ
-KŒHÞ
-H
-È™Ø–ÞLWH
-ˆÞˆ›ÝÛHH™Ø–ÞLKH
-ˆ
-KŒHÞ
-H
-È™Ø–ÞLKWH
-ˆÞˆ™]\›ˆÜ
-ˆ
-KŒHÞJH
-È›ÝÛH
-ˆÞB‚‚™YˆÛ\]ZYÝØ\œ
-œ˜[YNˆ[XYÙK’[XYÙK\ÙNˆ›Ø]
-HOˆ[XYÙK’[XYÙN‚ˆˆˆ‘Ù[H[™[]HH™X\ˆšX˜›Ûˆ^\™H\›Ý[™HÜž\Ý[ˆˆˆ‚ˆ™ØˆHœ˜\Ø\œ˜^Jœ˜[YK˜ÛÛ™\
-”‘ÐˆŠK\O[œ™›Ø]ÌŠBˆ^KHœ›YÜšYÌ’RQÒ•ÒQK˜\Ý\Jœ™›Ø]ÌŠBˆÙ[™WÞÙ[™WÞHHŒKŒˆ˜YX[ÞHHÙ[™WÞˆ˜YX[ÞHH^HHÙ[™WÞBˆ˜Y]\ÈHœœÜ\
-˜YX[Þ
-ˆ˜YX[Þ
-È˜YX[ÞH
-ˆ˜YX[ÞJH
-ÈKŒˆ[š]ÞH˜YX[ÞÈ˜Y]\Âˆ[š]ÞHH˜YX[ÞHÈ˜Y]\Âˆ[™Ù[ÞH][š]ÞBˆ[™Ù[ÞHH[š]Þˆ[™ÛHHœ˜\˜Ý[ŒŠ˜YX[ÞK˜YX[Þ
-B‚ˆÈÛÈÛÝ[\ÙZYÚYYY\È™]™[HšY[œ›ÛHÛÚÚ[™ÈYXÚ[šXØ[BˆÈ›Ý]Yˆ]™\žH\›H\È[ˆ[YÙ\ˆ[\Ü˜[œ™\]Y[˜ÞH›ÜˆHÛX[ˆÛÜ‚ˆ[™Ù[Ø[[Ý[H
-ˆŒH
-ˆœœÚ[ŠUH
-ˆ\ÙH
-È˜Y]\È
-ˆŒŒ
-ÈŒ
-ˆœœÚ[Š[™ÛH
-ˆ‹Œ
-JBˆ
-ÈKH
-ˆœœÚ[ŠUH
-ˆ‹Œ
-ˆ\ÙHH[™ÛH
-ˆ‹Œ
-È˜Y]\È
-ˆŒ
-Bˆ
-Bˆ˜YX[Ø[[Ý[H
-ˆKH
-ˆœœÚ[ŠUH
-ˆ\ÙHH[™ÛH
-ˆËŒ
-È˜Y]\È
-ˆŒMÊBˆ
-ÈMH
-ˆœœÚ[ŠUH
-ˆ‹Œ
-ˆ\ÙH
-È[™ÛH
-È˜Y]\È
-ˆŒÌJBˆ
-B‚ˆÛÝ\˜ÙWÞHH[™Ù[Þ
-ˆ[™Ù[Ø[[Ý[H[š]Þ
-ˆ˜YX[Ø[[Ý[ˆÛÝ\˜ÙWÞHH^HH[™Ù[ÞH
-ˆ[™Ù[Ø[[Ý[H[š]ÞH
-ˆ˜YX[Ø[[Ý[ˆØ\œYHØš[[™X\—ÜØ[\J™Ø‹ÛÝ\˜ÙWÞÛÝ\˜ÙWÞJBˆ™]\›ˆ[XYÙK™œ›ÛX\œ˜^JœZ[
-œ˜Û\
-Ø\œYMJJK”‘ÐˆŠB‚‚™YˆØÛÛÝ\—ØÝ\œ™[
-Ø\œYˆ[XYÙK’[XYÙK\ÙNˆ›Ø]
-HOˆ[XYÙK’[XYÙN‚ˆˆˆ”Ù[™H™\Ý˜Z[™Y˜]™[[™ÈYH[™[Z[˜[˜ÙHØ]™H›ÝYÚHšX˜›ÛœËˆˆˆ‚ˆÝˆHœ˜\Ø\œ˜^JØ\œY˜ÛÛ™\
-’ÕˆŠK\O[œ™›Ø]ÌŠK˜ÛÜJ
-Bˆ^KHœ›YÜšYÌ’RQÒ•ÒQK˜\Ý\Jœ™›Ø]ÌŠBˆHHŒˆHH^HHKŒˆ˜Y]\ÈHœœÜ\
-
-ˆ
-ÈH
-ˆJBˆ[™ÛHHœ˜\˜Ý[ŒŠK
-B‚ˆ˜]™[HœœÚ[ŠUH
-ˆ\ÙHH[™ÛH
-ˆKŒÍH
-È˜Y]\È
-ˆŒŽ
-BˆÙXÛÛ™\žHHœœÚ[ŠUH
-ˆ‹Œ
-ˆ\ÙH
-È[™ÛH
-ˆ‹ŒL
-È˜Y]\È
-ˆŒLÊBˆÝ–Ë‹‹‹HHœ›[Ù
-Ý–Ë‹‹‹H
-ÈŽ
-ˆ˜]™[
-ÈKŽ
-ˆÙXÛÛ™\žKM‹Œ
-BˆÝ–Ë‹‹‹WHHœ˜Û\
-Ý–Ë‹‹‹WH
-ÈKŒ
-ÈËŒˆ
-ˆ˜]™[ŒMKŒ
-BˆÝ–Ë‹‹‹—HHœ˜Û\
-Ý–Ë‹‹‹—H
-ÈËŽ
-ˆ˜]™[
-ÈK
-ˆÙXÛÛ™\žKŒMKŒ
-Bˆ™]\›ˆ[XYÙK™œ›ÛX\œ˜^JœZ[
-ÝŠK’ÕˆŠK˜ÛÛ™\
-”‘ÐˆŠB‚‚™YˆØ™^šY\—ÜÚ[
-Ú[Ëˆ›Ø]
-N‚ˆK‹ÈHÚ[ÂˆÛ]HKŒHˆHÛ]
-ŠˆÈ
-ˆÌH
-ÈÈ
-ˆÛ]
-ˆÛ]
-ˆ
-ˆVÌH
-ÈÈ
-ˆÛ]
-ˆ
-ˆ
-ˆ–ÌH
-È
-ŠˆÈ
-ˆÖÌBˆHHÛ]
-ŠˆÈ
-ˆÌWH
-ÈÈ
-ˆÛ]
-ˆÛ]
-ˆ
-ˆVÌWH
-ÈÈ
-ˆÛ]
-ˆ
-ˆ
-ˆ–ÌWH
-È
-ŠˆÈ
-ˆÖÌWBˆ™]\›ˆB‚‚™YˆÙ›ÝÚ[™×Ùš[[Y[Ê\ÙNˆ›Ø]šX˜›Û—ÛX\ÚÎˆ[XYÙK’[XYÙJHOˆ[XYÙK’[XYÙN‚ˆˆˆYÝË[ÜXÚ]HØ]\ÝXÈÝ˜[™È]˜]™[[Û™ÈH^\Ý[™ÈÝ\™\Ëˆˆˆ‚ˆ]ÈHÂˆ
+from __future__ import annotations
+
+import argparse
+import colorsys
+import math
+from pathlib import Path
+
+import numpy as np
+from PIL import Image, ImageChops, ImageDraw, ImageFilter
+
+from build_v10_crystal_focus import HEIGHT, WIDTH, build_particles, render_frame
 
 
-ÍÍ‹LŽ
-K
-Ž‹ÌŠK
-ÌÌËLÌŠK
-L‹ŒMJJKŒÍKËÊKˆ
+TAU = math.tau
 
 
-MŒŠK
-Œ
-K
-ÎŒÊK
-ÎÌ
-JKL‹ËŒJKˆ
+def _soft_ribbon_mask(reference: Image.Image) -> Image.Image:
+    """Find the saturated ribbon texture and protect the foreground crystal."""
+    hsv = np.asarray(reference.convert("HSV"), dtype=np.float32)
+    saturation = hsv[..., 1]
+    value = hsv[..., 2]
+
+    chroma = np.clip((saturation - 42.0) / 108.0, 0.0, 1.0)
+    light = np.clip((value - 18.0) / 92.0, 0.0, 1.0)
+    alpha = np.power(chroma * light, 0.72)
+
+    # Keep the treatment in the rear energy field, away from the pedestal.
+    geometry = Image.new("L", (WIDTH, HEIGHT), 255)
+    draw = ImageDraw.Draw(geometry)
+    draw.rectangle((0, 420, WIDTH, HEIGHT), fill=0)
+    draw.polygon(
+        [(240, 33), (307, 124), (329, 270), (322, 388),
+         (240, 431), (154, 385), (157, 174)],
+        fill=0,
+    )
+    geometry = geometry.filter(ImageFilter.GaussianBlur(7.0))
+    alpha *= np.asarray(geometry, dtype=np.float32) / 255.0
+
+    # A soft blur prevents cut-out edges while retaining bright filament detail.
+    mask = Image.fromarray(np.uint8(np.clip(alpha * 255.0, 0, 255)), "L")
+    return mask.filter(ImageFilter.GaussianBlur(3.2))
 
 
-LÌ‹MLÊK
-‹MÌŠK
-ÍÍËŽJK
-Ž‹ÍL
-JKMËËJKˆ
+def _bilinear_sample(rgb: np.ndarray, source_x: np.ndarray, source_y: np.ndarray) -> np.ndarray:
+    """Sample an RGB frame through a small smooth displacement field."""
+    source_x = np.clip(source_x, 0.0, WIDTH - 1.001)
+    source_y = np.clip(source_y, 0.0, HEIGHT - 1.001)
+
+    x0 = np.floor(source_x).astype(np.int32)
+    y0 = np.floor(source_y).astype(np.int32)
+    x1 = np.minimum(x0 + 1, WIDTH - 1)
+    y1 = np.minimum(y0 + 1, HEIGHT - 1)
+    wx = (source_x - x0)[..., None]
+    wy = (source_y - y0)[..., None]
+
+    top = rgb[y0, x0] * (1.0 - wx) + rgb[y0, x1] * wx
+    bottom = rgb[y1, x0] * (1.0 - wx) + rgb[y1, x1] * wx
+    return top * (1.0 - wy) + bottom * wy
 
 
-LÍKŽMJK
-ËÍ
-K
-Í‹ÌÍ
-K
-ÎÎÊJKÍ‹ËŒ
-Kˆ
+def _liquid_warp(frame: Image.Image, phase: float) -> Image.Image:
+    """Gently undulate the rear ribbon texture around the crystal."""
+    rgb = np.asarray(frame.convert("RGB"), dtype=np.float32)
+    yy, xx = np.mgrid[0:HEIGHT, 0:WIDTH].astype(np.float32)
+    centre_x, centre_y = 240.0, 245.0
+    radial_x = xx - centre_x
+    radial_y = yy - centre_y
+    radius = np.sqrt(radial_x * radial_x + radial_y * radial_y) + 1.0
+    unit_x = radial_x / radius
+    unit_y = radial_y / radius
+    tangent_x = -unit_y
+    tangent_y = unit_x
+    angle = np.arctan2(radial_y, radial_x)
+
+    # Two counterweighted eddies prevent the field from looking mechanically
+    # rotated.  Every term has an integer temporal frequency for a clean loop.
+    tangent_amount = (
+        4.25 * np.sin(TAU * phase + radius * 0.020 + 0.60 * np.sin(angle * 2.0))
+        + 1.45 * np.sin(TAU * 2.0 * phase - angle * 2.0 + radius * 0.008)
+    )
+    radial_amount = (
+        1.45 * np.sin(TAU * phase - angle * 3.0 + radius * 0.017)
+        + 0.55 * np.sin(TAU * 2.0 * phase + angle + radius * 0.031)
+    )
+
+    source_x = xx - tangent_x * tangent_amount - unit_x * radial_amount
+    source_y = yy - tangent_y * tangent_amount - unit_y * radial_amount
+    warped = _bilinear_sample(rgb, source_x, source_y)
+    return Image.fromarray(np.uint8(np.clip(warped, 0, 255)), "RGB")
 
 
-M‹MJK
-ŒËŒ
-K
-LÌKŽMÊK
-NLÍNJJKLËŒÊKˆ
+def _colour_current(warped: Image.Image, phase: float) -> Image.Image:
+    """Send a restrained travelling hue and luminance wave through the ribbons."""
+    hsv = np.asarray(warped.convert("HSV"), dtype=np.float32).copy()
+    yy, xx = np.mgrid[0:HEIGHT, 0:WIDTH].astype(np.float32)
+    dx = xx - 240.0
+    dy = yy - 245.0
+    radius = np.sqrt(dx * dx + dy * dy)
+    angle = np.arctan2(dy, dx)
+
+    travel = np.sin(TAU * phase - angle * 1.35 + radius * 0.028)
+    secondary = np.sin(TAU * 2.0 * phase + angle * 2.10 + radius * 0.013)
+    hsv[..., 0] = np.mod(hsv[..., 0] + 4.8 * travel + 1.8 * secondary, 256.0)
+    hsv[..., 1] = np.clip(hsv[..., 1] + 5.0 + 3.2 * travel, 0.0, 255.0)
+    hsv[..., 2] = np.clip(hsv[..., 2] + 3.8 * travel + 1.4 * secondary, 0.0, 255.0)
+    return Image.fromarray(np.uint8(hsv), "HSV").convert("RGB")
 
 
-LÎÍ
-K
-‹Ì
-K
-LÌ‹ÌNJK
-NLËÎÊJK‹ËŽ
-Kˆ
+def _bezier_point(points, t: float):
+    p0, p1, p2, p3 = points
+    omt = 1.0 - t
+    x = omt ** 3 * p0[0] + 3 * omt * omt * t * p1[0] + 3 * omt * t * t * p2[0] + t ** 3 * p3[0]
+    y = omt ** 3 * p0[1] + 3 * omt * omt * t * p1[1] + 3 * omt * t * t * p2[1] + t ** 3 * p3[1]
+    return x, y
 
 
-LKJK
-‹Í
-K
-LÌËÍÊK
-ŒKJJKŽËŒŠKˆB‚ˆœ›ØYH[XYÙK›™]Ê”‘ÐH‹
-ÒQRQÒ
-K
-
-JBˆÚ\œH[XYÙK›™]Ê”‘ÐH‹
-ÒQRQÒ
-K
-
-JBˆœ›ØYÙ˜]ÈH[XYÙQ˜]Ë‘˜]Êœ›ØY
-BˆÚ\œÙ˜]ÈH[XYÙQ˜]Ë‘˜]ÊÚ\œ
-B‚ˆØ[\\ÈHNˆ›Üˆ]Ú[™^
-ÛÛ›Û˜\ÙWÚYKÞXÛ\ÊH[ˆ[[Y\˜]J]ÊN‚ˆ™]š[Ý\ÈHØ™^šY\—ÜÚ[
-ÛÛ›ÛŒ
-Bˆ›Üˆ[™^[ˆ˜[™ÙJKØ[\\ÊN‚ˆH[™^È
-Ø[\\ÈHJBˆÚ[HØ™^šY\—ÜÚ[
-ÛÛ›Û
-BˆÈH˜]™[[™È[™[ÜHÜ™X]\Èš\ÚX›H\™XÝ[ÛˆÚ[HÝ™\›\[™ÂˆÈÞXÛ\ÈÙY\Hš[[Y[œ›ÛH›[šÚ[™ÈÛˆÜˆÙ™ˆ\ÈHÚÛK‚ˆØ]™HHH
-ÈH
-ˆX]œÚ[ŠUH
-ˆ
-
-ˆÞXÛ\ÈH\ÙH
-È]Ú[™^
-ˆŒLÍÊJBˆ[™[ÜHHX^
-Œ
-Ø]™HHŠHÈN
-H
-ŠˆKBˆYˆ[™[ÜHˆŒMN‚ˆYHH
-˜\ÙWÚYH
-ÈŒL
-ˆX]œÚ[ŠUH
-ˆ
-\ÙH
-È
-ˆÌŠJJH	HKŒˆ™YÜ™Y[‹›YHH
-[
-Ú[›™[
-ˆMJH›ÜˆÚ[›™[[ˆÛÛÜœÞ\ËšÝ—Ý×Ü™ØŠYKÌ‹KŒ
-JBˆœ›ØYÙ˜]Ë›[™J
-™]š[Ý\ËÚ[
-Kš[J™YÜ™Y[‹›YK[
-Í
-ˆ[™[ÜJJKÚYMÊBˆÚ\œÙ˜]Ë›[™J
-™]š[Ý\ËÚ[
-Kš[JŒÍKKMK[
-ÌH
-ˆ[™[ÜJJKÚYLJBˆ™]š[Ý\ÈHÚ[‚ˆœ›ØYHœ›ØY™š[\Š[XYÙQš[\‹‘Ø]\ÜÚX[›\ŠKŒŠJBˆš[[Y[ÈH[XYÙK˜[WØÛÛ\ÜÚ]Jœ›ØYÚ\œ
-Bˆ[HH[XYÙPÚÜË›][\Jš[[Y[Ë™Ù]Ú[›™[
-HŠKšX˜›Û—ÛX\ÚÊBˆš[[Y[Ëœ][J[JBˆ™]\›ˆš[[Y[Â‚‚™Yˆ[š[X]WÜšX˜›ÛœÊ˜\ÙNˆ[XYÙK’[XYÙK\ÙNˆ›Ø]šX˜›Û—ÛX\ÚÎˆ[XYÙK’[XYÙJHOˆ[XYÙK’[XYÙN‚ˆØ\œYHÛ\]ZYÝØ\œ
-˜\ÙK\ÙJBˆÚYYHØÛÛÝ\—ØÝ\œ™[
-Ø\œY\ÙJBˆÈ™\Ù\™H\ÙˆHÜšYÚ[˜[^\™H]™[ˆ[œÚYHHX\ÚËˆH[Ý™[Y[ˆÈ™[XZ[œÈÙ[H[™HØ[\\‰ÜÈš[™HÝ˜[™ÈÈ›Ý\›ˆ]\ÚK‚ˆ[Ý™YH[XYÙK˜›[™
-˜\ÙK˜ÛÛ™\
-”‘ÐˆŠKÚYYÎ
-Bˆœ˜[YHH[XYÙK˜ÛÛ\ÜÚ]J[Ý™Y˜\ÙK˜ÛÛ™\
-”‘ÐˆŠKšX˜›Û—ÛX\ÚÊK˜ÛÛ™\
-”‘ÐHŠBˆ™]\›ˆ[XYÙK˜[WØÛÛ\ÜÚ]Jœ˜[YKÙ›ÝÚ[™×Ùš[[Y[Ê\ÙKšX˜›Û—ÛX\ÚÊJK˜ÛÛ™\
-”‘ÐˆŠB‚‚™YˆXZ[Š
-HOˆ›Û™N‚ˆ\œÙ\ˆH\™Ü\œÙK\™Ý[Y[\œÙ\Š
-Bˆ\œÙ\‹˜YØ\™Ý[Y[
-‹KZ[œ]Y\ˆ‹™\]Z\™YUYJBˆ\œÙ\‹˜YØ\™Ý[Y[
-‹K[Ý]]Y\ˆ‹™\]Z\™YUYJBˆ\œÙ\‹˜YØ\™Ý[Y[
-‹KYœ˜[Y\È‹\OZ[Y˜][LÌ
-Bˆ\™ÜÈH\œÙ\‹œ\œÙWØ\™ÜÊ
-B‚ˆ[œ]Ù\ˆH]
-\™ÜËš[œ]Ù\ŠBˆÝ]]Ù\ˆH]
-\™ÜË›Ý]]Ù\ŠBˆÝ]]Ù\‹›ZÙ\Š\™[ÏUYK^\ÝÛÚÏUYJBˆ\XÛ\ÈHZ[Ü\XÛ\Ê
-B‚ˆÚ][XYÙK›Ü[Š[œ]Ù\ˆÈŒœ™ÈŠH\Èš\œÝ‚ˆšX˜›Û—ÛX\ÚÈHÜÛÙÜšX˜›Û—ÛX\ÚÊš\œÝ˜ÛÛ™\
-”‘ÐˆŠJBˆšX˜›Û—ÛX\ÚËœØ]™JÝ]]Ù\ˆÈ—ÜšX˜›Û—ÛX\ÚËœ™ÈŠB‚ˆ›Üˆœ˜[YWÛ[X™\ˆ[ˆ˜[™ÙJ\™ÜË™œ˜[Y\ÊN‚ˆÛÝ\˜ÙHH[œ]Ù\ˆÈˆžÙœ˜[YWÛ[X™\ŽŒKœ™È‚ˆYˆ›ÝÛÝ\˜ÙK™^\ÝÊ
-N‚ˆ˜Z\ÙHÞ\Ý[Q^]
-ˆ“Z\ÜÚ[™ÈÛÝ\˜ÙHœ˜[YNˆÜÛÝ\˜Ù_HŠBˆ\ÙHHœ˜[YWÛ[X™\ˆÈ\™ÜË™œ˜[Y\ÂˆÚ][XYÙK›Ü[ŠÛÝ\˜ÙJH\È[XYÙN‚ˆ[š[X]YØ˜\ÙHH[š[X]WÜšX˜›ÛœÊ[XYÙK˜ÛÛ™\
-”‘ÐˆŠK\ÙKšX˜›Û—ÛX\ÚÊBˆ™[™\™YH™[™\—Ùœ˜[YJ[š[X]YØ˜\ÙK\ÙK\XÛ\ÊBˆ™[™\™YœØ]™JÝ]]Ù\ˆÈˆžÙœ˜[YWÛ[X™\ŽŒKœ™È‹ÛÛ\™\Ü×Û]™[LÊB‚‚šYˆ×Û˜[YW×ÈOH—×ÛXZ[—×ÈŽ‚ˆXZ[Š
-B
+def _flowing_filaments(phase: float, ribbon_mask: Image.Image) -> Image.Image:
+    """Add low-opacity caustic strands that travel along the existing curves."""
+    paths = [
+        (((376, -28), (286, 32), (333, 132), (252, 215)), 0.035, 3.7),
+        (((494, 62), (420, 80), (384, 207), (278, 300)), 0.52, 3.1),
+        (((532, 153), (426, 172), (377, 285), (282, 350)), 0.57, 3.5),
+        (((535, 295), (427, 274), (366, 334), (278, 387)), 0.76, 3.0),
+        (((-42, 255), (63, 224), (131, 297), (190, 359)), 0.50, 3.3),
+        (((-38, 344), (66, 300), (132, 319), (193, 383)), 0.66, 3.8),
+        (((-25, 441), (66, 340), (133, 347), (205, 401)), 0.84, 3.2),
+    ]
+
+    broad = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    sharp = Image.new("RGBA", (WIDTH, HEIGHT), (0, 0, 0, 0))
+    broad_draw = ImageDraw.Draw(broad)
+    sharp_draw = ImageDraw.Draw(sharp)
+
+    samples = 180
+    for path_index, (control, base_hue, cycles) in enumerate(paths):
+        previous = _bezier_point(control, 0.0)
+        for index in range(1, samples):
+            t = index / (samples - 1)
+            point = _bezier_point(control, t)
+            # A travelling envelope creates visible direction while overlapping
+            # cycles keep the filament from blinking on or off as a whole.
+            wave = 0.5 + 0.5 * math.sin(TAU * (t * cycles - phase + path_index * 0.137))
+            envelope = max(0.0, (wave - 0.42) / 0.58) ** 1.65
+            if envelope > 0.015:
+                hue = (base_hue + 0.10 * math.sin(TAU * (phase + t * 0.72))) % 1.0
+                red, green, blue = (int(channel * 255) for channel in colorsys.hsv_to_rgb(hue, 0.72, 1.0))
+                broad_draw.line((previous, point), fill=(red, green, blue, int(34 * envelope)), width=7)
+                sharp_draw.line((previous, point), fill=(235, 249, 255, int(31 * envelope)), width=1)
+            previous = point
+
+    broad = broad.filter(ImageFilter.GaussianBlur(5.2))
+    filaments = Image.alpha_composite(broad, sharp)
+    alpha = ImageChops.multiply(filaments.getchannel("A"), ribbon_mask)
+    filaments.putalpha(alpha)
+    return filaments
+
+
+def animate_ribbons(base: Image.Image, phase: float, ribbon_mask: Image.Image) -> Image.Image:
+    warped = _liquid_warp(base, phase)
+    shifted = _colour_current(warped, phase)
+    # Preserve part of the original texture even inside the mask.  The movement
+    # remains gentle and the wallpaper's fine strands do not turn mushy.
+    moved = Image.blend(base.convert("RGB"), shifted, 0.78)
+    frame = Image.composite(moved, base.convert("RGB"), ribbon_mask).convert("RGBA")
+    return Image.alpha_composite(frame, _flowing_filaments(phase, ribbon_mask)).convert("RGB")
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--input-dir", required=True)
+    parser.add_argument("--output-dir", required=True)
+    parser.add_argument("--frames", type=int, default=270)
+    args = parser.parse_args()
+
+    input_dir = Path(args.input_dir)
+    output_dir = Path(args.output_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    particles = build_particles()
+
+    with Image.open(input_dir / "0000.png") as first:
+        ribbon_mask = _soft_ribbon_mask(first.convert("RGB"))
+    ribbon_mask.save(output_dir / "_ribbon_mask.png")
+
+    for frame_number in range(args.frames):
+        source = input_dir / f"{frame_number:04d}.png"
+        if not source.exists():
+            raise SystemExit(f"Missing source frame: {source}")
+        phase = frame_number / args.frames
+        with Image.open(source) as image:
+            animated_base = animate_ribbons(image.convert("RGB"), phase, ribbon_mask)
+            rendered = render_frame(animated_base, phase, particles)
+            rendered.save(output_dir / f"{frame_number:04d}.png", compress_level=3)
+
+
+if __name__ == "__main__":
+    main()

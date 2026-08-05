@@ -1,1 +1,14 @@
-şº(·úk¡ø¥zX§{ßİzÿçºYOz¹¢²È¨×§‰çHÈ]™[ˆš\ÛX]XÈÛÜ™HÛÛÛ\ˆ8 %ŒLH]š[™ÈšX˜›ÛœÂ‚•ŒLHÙY\ÈHÙ[™YÜ\İ[›Øİ\ÈÛÛ\ÜÚ][Ûˆ[™]™\H]š[™Èš\ÛHY™™Xİ[ˆÚ]™\ÈH™X\ˆÛÛİ\ˆšX˜›ÛœÈHÛİÈ\]ZYİ\œ™[ˆZ\ˆš[™H^\™B™Ù[H[™[]\ÈÚ[H˜]™[[™ÈÛÛİ\ˆ[™Ø]\İXÈØ]™\È›İÈ[Û™ÈB›Ü˜[™ÙKÜ™Y[‹ŞX[‹›YK[™š[Û]İ™X[\Ëˆ[[İ™[Y[\È\ÙK[ØÚÙYÂHš[™K\ÙXÛÛ™ÛÜ[™H›Ü™YÜ›İ[™Ü\İ[™[XZ[œÈ›İXİY[™Ú\œ‚‚ˆÈÈ]™HPÕQHYÙB‚šÎ‹Ëİ˜XÙYXÚŞK™Ú]X‹š[ËØ]™[‹\™Ø‹\Ú[™İ[\š]KXÛÛÛ\‹Â‚•HYÙH\Ù\È[ˆPÕQKXÛÛ\]X›H0åÍ”ÕÙX“H\™XİY]HÛİ\˜ÙHÚ]›Â˜Ø[˜\È[š[X][Û‹İ™\›^\ËÜˆÛÛ[[İ\È™[™\š[™ÈØÜš\Ë‚
+# Aven Prismatic Core Cooler â€” V11 Living Ribbons
+
+V11 keeps the centred Crystal Focus composition and every Living Prism effect,
+then gives the rear colour ribbons a slow liquid current. Their fine texture
+gently undulates while travelling colour and caustic waves flow along the
+orange, green, cyan, blue, and violet streams. All movement is phase-locked to
+the nine-second loop, and the foreground crystal remains protected and sharp.
+
+## Live iCUE page
+
+https://tracedicky.github.io/aven-rgb-singularity-cooler/
+
+The page uses an iCUE-compatible 480Ã—480 VP8/WebM direct-data source with no
+canvas animation, overlays, or continuous rendering scripts.
