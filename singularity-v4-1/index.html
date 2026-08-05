@@ -11,43 +11,36 @@
     video{display:block;width:100vw;height:100vh;object-fit:cover;background:#000}
   </style>
   <script>window.__avenPrismaticParts=[];</script>
-  <script src="video-v7-part-01.js"></script>
-  <script src="video-v7-part-02.js"></script>
-  <script src="video-v7-part-03.js"></script>
-  <script src="video-v7-part-04.js"></script>
+  <script src="video-v8-part-01.js"></script>
+  <script src="video-v8-part-02.js"></script>
+  <script src="video-v8-part-03.js"></script>
 </head>
 <body>
   <video id="prismatic" autoplay muted loop playsinline preload="auto" disablepictureinpicture></video>
   <script>
     (function () {
-      var video = document.getElementById("prismatic");
-      var encodedParts = window.__avenPrismaticParts || [];
-      var blobParts = [];
-
-      for (var p = 0; p < encodedParts.length; p += 1) {
-        var binary = window.atob(encodedParts[p]);
-        var bytes = new Uint8Array(binary.length);
-        for (var i = 0; i < binary.length; i += 1) bytes[i] = binary.charCodeAt(i);
-        blobParts.push(bytes);
-      }
-
-      window.__avenPrismaticParts = [];
-      video.muted = true;
-      video.setAttribute("muted", "");
-      video.src = URL.createObjectURL(new Blob(blobParts, {type: "video/mp4"}));
-
+      var video=document.getElementById("prismatic");
+      var payload=window.__avenPrismaticParts.join("");
+      window.__avenPrismaticParts.length=0;
+      video.muted=true;
+      video.defaultMuted=true;
+      video.setAttribute("muted","");
       function start() {
-        var attempt = video.play();
+        if (!video.paused) return;
+        var attempt=video.play();
         if (attempt && attempt.catch) attempt.catch(function () {});
       }
-
-      video.addEventListener("canplay", start, {once: true});
-      window.addEventListener("pageshow", start);
-      document.addEventListener("visibilitychange", function () {
+      video.addEventListener("loadeddata",start);
+      video.addEventListener("canplay",start);
+      video.addEventListener("stalled",start);
+      window.addEventListener("pageshow",start);
+      document.addEventListener("visibilitychange",function () {
         if (!document.hidden) start();
       });
+      video.src="data:video/webm;base64,"+payload;
       video.load();
-      window.setTimeout(start, 250);
+      start();
+      window.setInterval(start,3000);
     }());
   </script>
 </body>
