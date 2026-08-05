@@ -4,6 +4,7 @@ on:
   push:
     paths:
       - staging-v10/**
+      - .github/workflows/finalize-v10-master.yml
 
 permissions:
   contents: write
