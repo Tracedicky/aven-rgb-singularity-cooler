@@ -1,0 +1,178 @@
+name: Build Prismatic Core V9 Living Prism
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/build-prismatic-v9.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build-v9:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out cooler project
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild the square V7 master
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import pathlib
+          import re
+
+          folder = pathlib.Path("singularity-v4-1")
+          parts = sorted(folder.glob("video-v7-part-*.js"))
+          if not parts:
+              raise SystemExit("No V7 source payload was found")
+
+          encoded = []
+          for path in parts:
+              match = re.search(r'push\("([A-Za-z0-9+/=]+)"\)', path.read_text(encoding="utf-8"))
+              if not match:
+                  raise SystemExit(f"Could not read {path}")
+              encoded.append(match.group(1))
+
+          pathlib.Path("prismatic-v7.mp4").write_bytes(base64.b64decode("".join(encoded)))
+          PY
+
+      - name: Prepare the V9 renderer
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          python3 -m pip install --disable-pip-version-check pillow
+          mkdir -p v7_frames v9_frames
+          ffmpeg -y -i prismatic-v7.mp4 -vf fps=30 -frames:v 270 -start_number 0 v7_frames/%04d.png
+
+      - name: Render Living Prism animation layers
+        shell: bash
+        run: |
+          python3 tools/build_v9_living_prism.py --input-dir v7_frames --output-dir v9_frames --frames 270
+
+      - name: Encode the downloadable V9 master
+        shell: bash
+        run: |
+          ffmpeg -y -framerate 30 -start_number 0 -i v9_frames/%04d.png -an \
+            -c:v libx264 -preset slow -crf 16 -profile:v high -level 3.1 \
+            -pix_fmt yuv420p -movflags +faststart -g 60 -keyint_min 30 -sc_threshold 0 \
+            -metadata title="Aven Prismatic Core V9 Living Prism" \
+            Aven_Prismatic_Core_Cooler_V9_Living_Prism_480x480.mp4
+
+      - name: Encode iCUE-compatible VP8 WebM
+        shell: bash
+        run: |
+          ffmpeg -y -i Aven_Prismatic_Core_Cooler_V9_Living_Prism_480x480.mp4 -an \
+            -c:v libvpx -deadline good -cpu-used 2 -crf 10 -b:v 1900k \
+            -pix_fmt yuv420p -auto-alt-ref 1 -lag-in-frames 25 -r 30 \
+            Aven_Prismatic_Core_Cooler_V9_Living_Prism_480x480.webm
+
+      - name: Package the V9 direct-data player
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import pathlib
+
+          folder = pathlib.Path("singularity-v4-1")
+          webm_name = "Aven_Prismatic_Core_Cooler_V9_Living_Prism_480x480.webm"
+          encoded = base64.b64encode(pathlib.Path(webm_name).read_bytes()).decode("ascii")
+          chunk_size = 600000
+          chunks = [encoded[i:i + chunk_size] for i in range(0, len(encoded), chunk_size)]
+
+          for old in folder.glob("video-v9-part-*.js"):
+              old.unlink()
+          for index, chunk in enumerate(chunks, 1):
+              (folder / f"video-v9-part-{index:02d}.js").write_text(
+                  f'window.__avenPrismaticParts.push("{chunk}");\n',
+                  encoding="utf-8",
+              )
+
+          def page(prefix):
+              scripts = "\n".join(
+                  f'  <script src="{prefix}video-v9-part-{index:02d}.js"></script>'
+                  for index in range(1, len(chunks) + 1)
+              )
+              return f'''<!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+            <meta name="theme-color" content="#000000">
+            <title>Aven Prismatic Core V9 — Living Prism</title>
+            <style>
+              html,body{{width:100%;height:100%;margin:0;overflow:hidden;background:#000}}
+              body{{display:grid;place-items:center}}
+              video{{display:block;width:100vw;height:100vh;object-fit:cover;background:#000}}
+            </style>
+            <script>window.__avenPrismaticParts=[];</script>
+          {scripts}
+          </head>
+          <body>
+            <video id="prismatic" autoplay muted loop playsinline preload="auto" disablepictureinpicture></video>
+            <script>
+              (function () {{
+                var video=document.getElementById("prismatic");
+                var payload=window.__avenPrismaticParts.join("");
+                window.__avenPrismaticParts.length=0;
+                video.muted=true;
+                video.defaultMuted=true;
+                video.setAttribute("muted","");
+                function start() {{
+                  if (!video.paused) return;
+                  var attempt=video.play();
+                  if (attempt && attempt.catch) attempt.catch(function () {{}});
+                }}
+                video.addEventListener("loadeddata",start);
+                video.addEventListener("canplay",start);
+                video.addEventListener("stalled",start);
+                window.addEventListener("pageshow",start);
+                document.addEventListener("visibilitychange",function () {{
+                  if (!document.hidden) start();
+                }});
+                video.src="data:video/webm;base64,"+payload;
+                video.load();
+                start();
+                window.setInterval(start,3000);
+              }}());
+            </script>
+          </body>
+          </html>
+          '''
+
+          pathlib.Path("index.html").write_text(page("singularity-v4-1/"), encoding="utf-8")
+          (folder / "index.html").write_text(page(""), encoding="utf-8")
+          pathlib.Path("README.md").write_text(
+              "# Aven Prismatic Core Cooler — V9 Living Prism\n\n"
+              "A seamless 480×480 cooler companion to Aven's Prismatic Core desktop wallpaper. "
+              "V9 adds baked aurora currents, layered rising particles, moving crystal energy, "
+              "facet glints, and illuminated floor ripples while preserving OLED-black contrast.\n\n"
+              "## Live page\n\n"
+              "https://tracedicky.github.io/aven-rgb-singularity-cooler/\n\n"
+              "The live player uses an iCUE-compatible VP8/WebM direct-data source with no canvas "
+              "animation, overlays, or continuous rendering scripts.\n",
+              encoding="utf-8",
+          )
+          PY
+
+      - name: Publish Living Prism V9
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- \
+            index.html \
+            README.md \
+            singularity-v4-1/index.html \
+            singularity-v4-1/video-v9-part-*.js \
+            Aven_Prismatic_Core_Cooler_V9_Living_Prism_480x480.mp4 \
+            Aven_Prismatic_Core_Cooler_V9_Living_Prism_480x480.webm
+          git commit -m "Publish V9 Living Prism cooler animation"
+          git push
