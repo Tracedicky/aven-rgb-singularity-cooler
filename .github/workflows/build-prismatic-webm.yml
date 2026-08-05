@@ -1,0 +1,138 @@
+name: Build iCUE-compatible Prismatic WebM
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/build-prismatic-webm.yml
+
+permissions:
+  contents: write
+
+jobs:
+  build-webm:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out cooler page
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Rebuild the V7 MP4 payload
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import pathlib
+          import re
+
+          folder = pathlib.Path("singularity-v4-1")
+          parts = sorted(folder.glob("video-v7-part-*.js"))
+          if not parts:
+              raise SystemExit("No V7 MP4 payload parts found")
+
+          encoded = []
+          for path in parts:
+              text = path.read_text(encoding="utf-8")
+              match = re.search(r'push\("([A-Za-z0-9+/=]+)"\)', text)
+              if not match:
+                  raise SystemExit(f"Could not decode {path}")
+              encoded.append(match.group(1))
+
+          pathlib.Path("prismatic-v7.mp4").write_bytes(base64.b64decode("".join(encoded)))
+          PY
+
+      - name: Encode VP8 WebM for iCUE
+        shell: bash
+        run: |
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y ffmpeg
+          fi
+          ffmpeg -y -i prismatic-v7.mp4 -an -c:v libvpx -deadline good -cpu-used 2 -crf 10 -b:v 1800k -pix_fmt yuv420p -auto-alt-ref 1 -lag-in-frames 25 -r 30 prismatic-v8.webm
+
+      - name: Package the direct-data player
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import base64
+          import pathlib
+
+          folder = pathlib.Path("singularity-v4-1")
+          encoded = base64.b64encode(pathlib.Path("prismatic-v8.webm").read_bytes()).decode("ascii")
+          chunk_size = 600000
+          chunks = [encoded[i:i + chunk_size] for i in range(0, len(encoded), chunk_size)]
+
+          for old in folder.glob("video-v8-part-*.js"):
+              old.unlink()
+          for index, chunk in enumerate(chunks, 1):
+              path = folder / f"video-v8-part-{index:02d}.js"
+              path.write_text(f'window.__avenPrismaticParts.push("{chunk}");\n', encoding="utf-8")
+
+          def page(prefix):
+              scripts = "\n".join(
+                  f'  <script src="{prefix}video-v8-part-{index:02d}.js"></script>'
+                  for index in range(1, len(chunks) + 1)
+              )
+              return f'''<!doctype html>
+          <html lang="en">
+          <head>
+            <meta charset="utf-8">
+            <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+            <meta name="theme-color" content="#000000">
+            <title>Aven Prismatic Core Cooler</title>
+            <style>
+              html,body{{width:100%;height:100%;margin:0;overflow:hidden;background:#000}}
+              body{{display:grid;place-items:center}}
+              video{{display:block;width:100vw;height:100vh;object-fit:cover;background:#000}}
+            </style>
+            <script>window.__avenPrismaticParts=[];</script>
+          {scripts}
+          </head>
+          <body>
+            <video id="prismatic" autoplay muted loop playsinline preload="auto" disablepictureinpicture></video>
+            <script>
+              (function () {{
+                var video=document.getElementById("prismatic");
+                var payload=window.__avenPrismaticParts.join("");
+                window.__avenPrismaticParts.length=0;
+                video.muted=true;
+                video.defaultMuted=true;
+                video.setAttribute("muted","");
+                function start() {{
+                  if (!video.paused) return;
+                  var attempt=video.play();
+                  if (attempt && attempt.catch) attempt.catch(function () {{}});
+                }}
+                video.addEventListener("loadeddata",start);
+                video.addEventListener("canplay",start);
+                video.addEventListener("stalled",start);
+                window.addEventListener("pageshow",start);
+                document.addEventListener("visibilitychange",function () {{
+                  if (!document.hidden) start();
+                }});
+                video.src="data:video/webm;base64,"+payload;
+                video.load();
+                start();
+                window.setInterval(start,3000);
+              }}());
+            </script>
+          </body>
+          </html>
+          '''
+
+          pathlib.Path("index.html").write_text(page("singularity-v4-1/"), encoding="utf-8")
+          (folder / "index.html").write_text(page(""), encoding="utf-8")
+          PY
+
+      - name: Publish the compatible player
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- index.html singularity-v4-1/index.html singularity-v4-1/video-v8-part-*.js
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Publish iCUE-compatible Prismatic Core WebM"
+          git push
