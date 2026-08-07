@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+  <meta name="theme-color" content="#000000">
+  <title>Aven Prismatic Core V13 — Orbital Prism</title>
+  <style>
+    html,body{width:100%;height:100%;margin:0;overflow:hidden;background:#000}
+    body{display:grid;place-items:center}
+    video{display:block;width:100vw;height:100vh;object-fit:cover;background:#000}
+  </style>
+  <script>window.__avenPrismaticParts=[];</script>
+  <script src="singularity-v13/video-v13-part-01.js"></script>
+  <script src="singularity-v13/video-v13-part-02.js"></script>
+  <script src="singularity-v13/video-v13-part-03.js"></script>
+</head>
+<body>
+  <video id="prismatic" autoplay muted loop playsinline preload="auto" disablepictureinpicture></video>
+  <script>
+    (function(){
+      var video=document.getElementById("prismatic"), payload=window.__avenPrismaticParts.join("");
+      window.__avenPrismaticParts.length=0; video.muted=true; video.defaultMuted=true; video.setAttribute("muted","");
+      function start(){if(!video.paused)return;var p=video.play();if(p&&p.catch)p.catch(function(){});}
+      video.addEventListener("loadeddata",start); video.addEventListener("canplay",start);
+      video.addEventListener("stalled",start); window.addEventListener("pageshow",start);
+      document.addEventListener("visibilitychange",function(){if(!document.hidden)start();});
+      video.src="data:video/webm;base64,"+payload; video.load(); start(); window.setInterval(start,3000);
+    }());
+  </script>
+</body>
+</html>
