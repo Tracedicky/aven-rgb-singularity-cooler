@@ -649,16 +649,18 @@ def main() -> None:
 
         args.preview.mkdir(parents=True, exist_ok=True)
         for frame in args.preview_frames:
-            pixels = finish(scene.render(frame), scene.geometry, frame)
+            source = 0 if frame == FRAMES - 1 else frame
+            pixels = finish(scene.render(source), scene.geometry, source)
             Image.fromarray(pixels).save(args.preview / f"v14_{frame:03d}.png")
             print(f"preview frame {frame}")
         return
 
     def frames():
         for frame in range(FRAMES):
+            source = 0 if frame == FRAMES - 1 else frame
             if frame % 30 == 0:
                 print(f"  frame {frame}/{FRAMES}", flush=True)
-            yield finish(scene.render(frame), scene.geometry, frame)
+            yield finish(scene.render(source), scene.geometry, source)
 
     args.root.mkdir(parents=True, exist_ok=True)
     video = args.root / "aven-v14-event-horizon.webm"
