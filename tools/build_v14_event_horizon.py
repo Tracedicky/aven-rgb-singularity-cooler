@@ -313,6 +313,7 @@ class Backdrop:
         self.cycles, self.phase = self.cycles[keep], self.phase[keep]
         self.drift = self.drift[keep]
         self.rise = self.rise[keep]
+        self.velocity = rng.uniform(0.35, 1.8, size=self.brightness.shape[0]).astype(np.float32)
         self.tint = self.tint[keep]
 
         self.orbit_r = rng.uniform(0.48, 0.84, size=260).astype(np.float32)
@@ -339,8 +340,14 @@ class Backdrop:
 
         twinkle = 0.72 + 0.28 * np.sin(TAU * (self.cycles * phase + self.phase))
         sparkle = 0.86 + 0.14 * np.sin(TAU * (self.rise * phase + self.phase * 2.1))
-        drift_y = np.round(self.drift * np.sin(TAU * (0.18 * phase + self.phase * 1.7))).astype(np.int32)
-        drift_x = np.round(1.6 * np.cos(TAU * (0.22 * phase + self.phase * 2.3 + self.x / 180.0))).astype(np.int32)
+        drift_y = np.round(
+            self.drift * np.sin(TAU * (0.18 * phase + self.phase * 1.7))
+            + self.velocity * np.cos(TAU * (phase * 3.2 + self.phase * 4.1)) * 3.2
+        ).astype(np.int32)
+        drift_x = np.round(
+            1.6 * np.cos(TAU * (0.22 * phase + self.phase * 2.3 + self.x / 180.0))
+            + self.velocity * np.sin(TAU * (phase * 2.8 + self.phase * 6.1)) * 3.2
+        ).astype(np.int32)
         star_y = np.clip(self.y + drift_y, 1, RENDER - 2)
         star_x = np.clip(self.x + drift_x, 1, RENDER - 2)
         flare = (self.brightness * twinkle * sparkle)[:, None] * self.tint
@@ -505,15 +512,22 @@ class Scene:
         )
         image += hsv_to_rgb(base_hue + 0.12, np.full_like(surge, 0.70), surge * 1.75)
 
-        # A deeper, more luxurious core — the black center stays almost void, with
-        # a faint ring of cool indigo around it to sharpen the centerpiece.
+        # A deeper, more luxurious core — the black center stays dark but with a
+        # slow, elegant kaleidoscopic pulse to keep the centerpiece alive.
         void_mask = np.exp(-(((geometry.screen_radius - 0.10) / 0.080) ** 2))
         void_aureole = np.exp(-(((geometry.screen_radius - 0.18) / 0.022) ** 2))
+        inner = np.clip(1.0 - geometry.screen_radius / 0.18, 0.0, 1.0)
+        kaleido = (
+            0.60
+            + 0.40 * np.sin(TAU * (5.0 * geometry.screen_angle + phase * 4.0))
+            * np.cos(TAU * (7.0 * geometry.screen_radius / 0.18 - phase * 6.0))
+        )
+        void_pattern = inner * np.exp(-((geometry.screen_radius - 0.08) / 0.04) ** 2) * (0.35 + 0.65 * kaleido)
         image -= void_mask[..., None] * 0.18
         image += hsv_to_rgb(
-            0.63 + 0.06 * np.sin(TAU * phase),
-            np.full_like(void_aureole, 0.28),
-            void_aureole * 0.23,
+            0.63 + 0.13 * np.sin(TAU * (phase + geometry.screen_angle * 1.3)),
+            np.full_like(void_aureole, 0.42),
+            (void_aureole * 0.22 + void_pattern * 0.30),
         )
         image *= (1.0 - geometry.shadow * 0.985)[..., None]
 
