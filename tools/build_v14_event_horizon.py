@@ -348,8 +348,8 @@ class Backdrop:
             1.6 * np.cos(TAU * (0.22 * phase + self.phase * 2.3 + self.x / 180.0))
             + self.velocity * np.sin(TAU * (phase * 2.8 + self.phase * 6.1)) * 3.2
         ).astype(np.int32)
-        star_y = np.clip(self.y + drift_y, 1, RENDER - 2)
-        star_x = np.clip(self.x + drift_x, 1, RENDER - 2)
+        star_y = np.clip(self.y + drift_y, 1, RENDER - 3)
+        star_x = np.clip(self.x + drift_x, 1, RENDER - 3)
         flare = (self.brightness * twinkle * sparkle)[:, None] * self.tint
 
         stars = np.zeros((RENDER, RENDER, 3), dtype=np.float32)
