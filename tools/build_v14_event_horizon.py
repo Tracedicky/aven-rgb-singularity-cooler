@@ -301,10 +301,9 @@ class Backdrop:
         self.drift = rng.uniform(-1.6, 1.6, size=count).astype(np.float32)
         self.rise = rng.uniform(0.6, 1.8, size=count).astype(np.float32)
 
-        warmth = rng.random(count).astype(np.float32)
-        self.tint = np.stack(
-            [0.94 + 0.07 * warmth, 0.96 + 0.03 * warmth, 1.02 - 0.04 * warmth], axis=-1
-        ).astype(np.float32)
+        star_hue = rng.random(count).astype(np.float32)
+        star_saturation = rng.uniform(0.45, 0.85, size=count).astype(np.float32)
+        self.tint = hsv_to_rgb(star_hue, star_saturation, np.ones(count, dtype=np.float32))
 
         # Stars sit far enough out that the disk glow does not swallow them.
         keep = geometry.screen_radius[self.y, self.x] > 0.34
@@ -757,20 +756,18 @@ def main() -> None:
 
         args.preview.mkdir(parents=True, exist_ok=True)
         for frame in args.preview_frames:
-            source = 0 if frame == FRAMES - 1 else frame
-            image, core_layer = scene.render(source)
-            pixels = finish(image, core_layer, scene.geometry, source)
+            image, core_layer = scene.render(frame)
+            pixels = finish(image, core_layer, scene.geometry, frame)
             Image.fromarray(pixels).save(args.preview / f"v14_{frame:03d}.png")
             print(f"preview frame {frame}")
         return
 
     def frames():
         for frame in range(FRAMES):
-            source = 0 if frame == FRAMES - 1 else frame
             if frame % 30 == 0:
                 print(f"  frame {frame}/{FRAMES}", flush=True)
-            image, core_layer = scene.render(source)
-            yield finish(image, core_layer, scene.geometry, source)
+            image, core_layer = scene.render(frame)
+            yield finish(image, core_layer, scene.geometry, frame)
 
     args.root.mkdir(parents=True, exist_ok=True)
     video = args.root / "aven-v14-event-horizon.webm"
