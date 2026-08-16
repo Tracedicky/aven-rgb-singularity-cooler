@@ -298,6 +298,8 @@ class Backdrop:
         self.brightness = (0.04 + 1.45 * brightness).astype(np.float32)
         self.cycles = rng.integers(1, 5, size=count).astype(np.float32)
         self.phase = rng.random(count).astype(np.float32)
+        self.drift = rng.uniform(-1.6, 1.6, size=count).astype(np.float32)
+        self.rise = rng.uniform(0.6, 1.8, size=count).astype(np.float32)
 
         warmth = rng.random(count).astype(np.float32)
         self.tint = np.stack(
@@ -309,6 +311,8 @@ class Backdrop:
         self.x, self.y = self.x[keep], self.y[keep]
         self.brightness = self.brightness[keep]
         self.cycles, self.phase = self.cycles[keep], self.phase[keep]
+        self.drift = self.drift[keep]
+        self.rise = self.rise[keep]
         self.tint = self.tint[keep]
 
         self.orbit_r = rng.uniform(0.48, 0.84, size=260).astype(np.float32)
@@ -334,14 +338,23 @@ class Backdrop:
         nebula = upsample(cloud, 16) * 0.040 * self.falloff[..., None]
 
         twinkle = 0.72 + 0.28 * np.sin(TAU * (self.cycles * phase + self.phase))
-        flare = (self.brightness * twinkle)[:, None] * self.tint
+        sparkle = 0.86 + 0.14 * np.sin(TAU * (self.rise * phase + self.phase * 2.1))
+        drift_y = np.round(self.drift * np.sin(TAU * (0.18 * phase + self.phase * 1.7))).astype(np.int32)
+        drift_x = np.round(1.6 * np.cos(TAU * (0.22 * phase + self.phase * 2.3 + self.x / 180.0))).astype(np.int32)
+        star_y = np.clip(self.y + drift_y, 1, RENDER - 2)
+        star_x = np.clip(self.x + drift_x, 1, RENDER - 2)
+        flare = (self.brightness * twinkle * sparkle)[:, None] * self.tint
 
         stars = np.zeros((RENDER, RENDER, 3), dtype=np.float32)
-        np.add.at(stars, (self.y, self.x), flare)
-        np.add.at(stars, (self.y + 1, self.x), flare * 0.34)
-        np.add.at(stars, (self.y - 1, self.x), flare * 0.34)
-        np.add.at(stars, (self.y, self.x + 1), flare * 0.34)
-        np.add.at(stars, (self.y, self.x - 1), flare * 0.34)
+        np.add.at(stars, (star_y, star_x), flare)
+        np.add.at(stars, (star_y + 1, star_x), flare * 0.34)
+        np.add.at(stars, (star_y - 1, star_x), flare * 0.34)
+        np.add.at(stars, (star_y, star_x + 1), flare * 0.34)
+        np.add.at(stars, (star_y, star_x - 1), flare * 0.34)
+        np.add.at(stars, (star_y + 2, star_x), flare * 0.14)
+        np.add.at(stars, (star_y - 2, star_x), flare * 0.14)
+        np.add.at(stars, (star_y, star_x + 2), flare * 0.14)
+        np.add.at(stars, (star_y, star_x - 2), flare * 0.14)
 
         dust = np.zeros((RENDER, RENDER, 3), dtype=np.float32)
         centre = (RENDER - 1) / 2.0
@@ -491,6 +504,13 @@ class Scene:
             0.58 + 0.42 * np.sin(TAU * (phase * 2.0 + geometry.screen_angle * 2.0))
         )
         image += hsv_to_rgb(base_hue + 0.12, np.full_like(surge, 0.70), surge * 1.75)
+
+        # A deeper, more luxurious core — the black center stays almost void, with
+        # a faint ring of cool indigo around it to sharpen the centerpiece.
+        void_mask = np.exp(-(((geometry.screen_radius - 0.10) / 0.080) ** 2))
+        void_aureole = np.exp(-(((geometry.screen_radius - 0.18) / 0.022) ** 2))
+        image -= void_mask * 0.18
+        image += hsv_to_rgb(0.63 + 0.06 * np.sin(TAU * phase), np.full_like(void_aureole, 0.28), void_aureole * 0.23)
         image *= (1.0 - geometry.shadow * 0.985)[..., None]
 
         # --- sparks -----------------------------------------------------------
