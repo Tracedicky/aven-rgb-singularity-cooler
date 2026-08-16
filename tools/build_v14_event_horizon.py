@@ -631,9 +631,8 @@ def write_payload(video: Path, folder: Path, chunk: int = 1_400_000) -> int:
 
 
 def write_page(root: Path, part_count: int) -> None:
-    version = "v14-event-horizon-20260816"
     scripts = "\n".join(
-        f'  <script src="singularity-v14/video-v14-part-{number:02d}.js?v={version}"></script>'
+        f'  <script src="singularity-v14/video-v14-part-{number:02d}.js"></script>'
         for number in range(1, part_count + 1)
     )
     root.joinpath("index.html").write_text(
