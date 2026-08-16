@@ -290,13 +290,13 @@ class Geometry:
 class Backdrop:
     def __init__(self, geometry: Geometry) -> None:
         rng = np.random.default_rng(4471)
-        count = 520
+        count = 760
 
         self.x = rng.integers(2, RENDER - 3, size=count)
         self.y = rng.integers(2, RENDER - 3, size=count)
         brightness = rng.random(count) ** 3.2
-        self.brightness = (0.03 + 1.1 * brightness).astype(np.float32)
-        self.cycles = rng.integers(1, 4, size=count).astype(np.float32)
+        self.brightness = (0.04 + 1.45 * brightness).astype(np.float32)
+        self.cycles = rng.integers(1, 5, size=count).astype(np.float32)
         self.phase = rng.random(count).astype(np.float32)
 
         warmth = rng.random(count).astype(np.float32)
@@ -311,12 +311,18 @@ class Backdrop:
         self.cycles, self.phase = self.cycles[keep], self.phase[keep]
         self.tint = self.tint[keep]
 
+        self.orbit_r = rng.uniform(0.48, 0.84, size=260).astype(np.float32)
+        self.orbit_theta = rng.random(260).astype(np.float32)
+        self.orbit_spin = rng.uniform(0.8, 2.4, size=260).astype(np.float32)
+        self.particle_hue = rng.random(260).astype(np.float32)
+        self.particle_size = rng.uniform(1.4, 4.4, size=260).astype(np.float32)
+
         coarse = RENDER // 16
         cloud = rng.normal(size=(coarse, coarse, 3)).astype(np.float32)
         cloud = blur(cloud, 5.0)
         cloud -= cloud.min()
         cloud /= cloud.max() + 1e-6
-        self.cloud = cloud * np.array([0.30, 0.52, 1.0], dtype=np.float32)
+        self.cloud = cloud * np.array([0.28, 0.56, 1.0], dtype=np.float32)
 
         self.falloff = (
             0.16 + 0.84 * np.clip(1.0 - geometry.screen_radius / 1.5, 0.0, 1.0) ** 2
@@ -325,9 +331,9 @@ class Backdrop:
     def render(self, phase: float) -> np.ndarray:
         drift = int(round(phase * self.cloud.shape[0])) % self.cloud.shape[0]
         cloud = np.roll(self.cloud, drift, axis=1)
-        nebula = upsample(cloud, 16) * 0.030 * self.falloff[..., None]
+        nebula = upsample(cloud, 16) * 0.040 * self.falloff[..., None]
 
-        twinkle = 0.70 + 0.30 * np.sin(TAU * (self.cycles * phase + self.phase))
+        twinkle = 0.72 + 0.28 * np.sin(TAU * (self.cycles * phase + self.phase))
         flare = (self.brightness * twinkle)[:, None] * self.tint
 
         stars = np.zeros((RENDER, RENDER, 3), dtype=np.float32)
@@ -337,7 +343,22 @@ class Backdrop:
         np.add.at(stars, (self.y, self.x + 1), flare * 0.34)
         np.add.at(stars, (self.y, self.x - 1), flare * 0.34)
 
-        return nebula + stars
+        dust = np.zeros((RENDER, RENDER, 3), dtype=np.float32)
+        centre = (RENDER - 1) / 2.0
+        for radius, theta, spin, hue, size in zip(
+            self.orbit_r, self.orbit_theta, self.orbit_spin, self.particle_hue, self.particle_size
+        ):
+            angle = TAU * (phase * spin + theta)
+            px = np.clip((centre + np.cos(angle) * radius * centre * 1.08).astype(np.int32), 1, RENDER - 2)
+            py = np.clip((centre - np.sin(angle) * radius * centre * DISK_SQUASH * 1.08).astype(np.int32), 1, RENDER - 2)
+            colour = hsv_to_rgb(hue, np.array(0.68, dtype=np.float32), np.array(0.85, dtype=np.float32))
+            dust[py, px] += colour * (0.40 + 0.70 * size / self.particle_size.max())
+            dust[py + 1, px] += colour * 0.32
+            dust[py - 1, px] += colour * 0.32
+            dust[py, px + 1] += colour * 0.32
+            dust[py, px - 1] += colour * 0.32
+
+        return nebula + stars + dust
 
 
 # ---------------------------------------------------------------------------
@@ -348,39 +369,44 @@ class Backdrop:
 class Sparks:
     def __init__(self) -> None:
         rng = np.random.default_rng(9130)
-        count = 210
+        count = 420
         self.radius = (DISK_INNER + 0.03 + rng.random(count) ** 1.5 * (DISK_OUTER - DISK_INNER - 0.06)).astype(np.float32)
-        self.orbits = rng.choice([1, 2, 3, 4, 5], size=count, p=[0.10, 0.20, 0.26, 0.24, 0.20]).astype(np.float32)
+        self.orbits = rng.choice([1, 2, 3, 4, 5, 6, 7], size=count, p=[0.06, 0.16, 0.22, 0.20, 0.18, 0.12, 0.06]).astype(np.float32)
         self.phase = rng.random(count).astype(np.float32)
-        self.lift = (rng.normal(scale=0.012, size=count)).astype(np.float32)
-        self.energy = (0.35 + rng.random(count) ** 2 * 1.5).astype(np.float32)
-        self.hue_offset = rng.normal(scale=0.05, size=count).astype(np.float32)
+        self.lift = (rng.normal(scale=0.014, size=count)).astype(np.float32)
+        self.energy = (0.62 + rng.random(count) ** 2 * 2.0).astype(np.float32)
+        self.hue_offset = rng.normal(scale=0.06, size=count).astype(np.float32)
+        self.size = (rng.uniform(1.2, 3.8, size=count)).astype(np.float32)
 
     def render(self, phase: float, base_hue: float) -> np.ndarray:
         layer = np.zeros((RENDER, RENDER, 3), dtype=np.float32)
         centre = (RENDER - 1) / 2.0
 
-        for step, weight in ((0.0, 1.0), (-0.006, 0.42), (-0.012, 0.16)):
+        for step, weight in ((0.0, 1.0), (-0.006, 0.48), (-0.012, 0.20), (0.010, 0.26)):
             angle = TAU * (self.orbits * (phase + step) + self.phase)
             u = self.radius * np.cos(angle)
             v = self.radius * np.sin(angle) * DISK_SQUASH + self.lift
 
-            # Sparks behind the horizon are hidden by it.
             visible = ~((np.hypot(u, v) < SHADOW_RADIUS) & (np.sin(angle) > 0))
 
             hue = base_hue + HUE_SPREAD * np.sin(angle) + self.hue_offset
-            depth = 0.55 + 0.45 * (1.0 - np.sin(angle))
+            depth = 0.60 + 0.40 * (1.0 - np.sin(angle))
             colour = hsv_to_rgb(hue, np.full_like(hue, 0.55), self.energy * depth * weight)
 
             px = np.clip((centre + u * centre).astype(np.int32), 1, RENDER - 2)
             py = np.clip((centre - v * centre).astype(np.int32), 1, RENDER - 2)
             px, py, colour = px[visible], py[visible], colour[visible]
 
-            np.add.at(layer, (py, px), colour)
-            np.add.at(layer, (py + 1, px), colour * 0.30)
-            np.add.at(layer, (py - 1, px), colour * 0.30)
-            np.add.at(layer, (py, px + 1), colour * 0.30)
-            np.add.at(layer, (py, px - 1), colour * 0.30)
+            size_scale = (1.0 + 0.5 * self.size[visible])[:, None]
+            np.add.at(layer, (py, px), colour * size_scale)
+            np.add.at(layer, (py + 1, px), colour * 0.32)
+            np.add.at(layer, (py - 1, px), colour * 0.32)
+            np.add.at(layer, (py, px + 1), colour * 0.32)
+            np.add.at(layer, (py, px - 1), colour * 0.32)
+            np.add.at(layer, (py + 2, px), colour * 0.15)
+            np.add.at(layer, (py - 2, px), colour * 0.15)
+            np.add.at(layer, (py, px + 2), colour * 0.15)
+            np.add.at(layer, (py, px - 2), colour * 0.15)
 
         return layer
 
@@ -456,8 +482,15 @@ class Scene:
 
         # --- photon ring ------------------------------------------------------
         ring_hue = base_hue + HUE_SPREAD * np.sin(geometry.screen_angle)
-        ring = geometry.photon_ring * (1.0 + 0.45 * np.sin(TAU * (2 * phase + geometry.screen_angle / TAU)))
-        image += hsv_to_rgb(ring_hue, np.full_like(ring_hue, 0.30), ring * 2.6)
+        ring = geometry.photon_ring * (1.0 + 0.55 * np.sin(TAU * (2 * phase + geometry.screen_angle / TAU)))
+        image += hsv_to_rgb(ring_hue, np.full_like(ring_hue, 0.28), ring * 3.0)
+
+        # Extra energy surge to give the event horizon more life and a stronger
+        # "live cooler" feel without washing out the black core.
+        surge = np.exp(-(((geometry.screen_radius - 0.43) / 0.05) ** 2)) * (
+            0.58 + 0.42 * np.sin(TAU * (phase * 2.4 + geometry.screen_angle * 2.0))
+        )
+        image += hsv_to_rgb(base_hue + 0.12, np.full_like(surge, 0.70), surge * 1.75)
         image *= (1.0 - geometry.shadow * 0.985)[..., None]
 
         # --- sparks -----------------------------------------------------------
