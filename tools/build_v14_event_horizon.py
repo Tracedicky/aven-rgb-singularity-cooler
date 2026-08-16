@@ -450,9 +450,12 @@ class CoreParticles:
     def __init__(self) -> None:
         rng = np.random.default_rng(31337)
         count = 70
-        self.radius_freq = rng.uniform(0.6, 2.2, size=count).astype(np.float32)
+        # Cycle counts must be whole numbers — like every other animated
+        # quantity in this scene — so each particle's path closes exactly
+        # after one loop instead of ending up somewhere else and popping.
+        self.radius_freq = rng.choice([1, 2, 3], size=count).astype(np.float32)
         self.radius_phase = rng.random(count).astype(np.float32)
-        self.angle_freq = rng.uniform(0.7, 2.6, size=count).astype(np.float32)
+        self.angle_freq = rng.choice([1, 2, 3, 4], size=count).astype(np.float32)
         self.angle_phase = rng.random(count).astype(np.float32)
         self.radius_min = rng.uniform(0.05, 0.30, size=count).astype(np.float32)
         self.radius_max = rng.uniform(0.55, 1.0, size=count).astype(np.float32)
