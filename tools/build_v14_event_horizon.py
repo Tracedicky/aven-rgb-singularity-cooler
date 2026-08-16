@@ -33,10 +33,10 @@ DISK_INNER = 0.347
 DISK_OUTER = 0.895
 DISK_SQUASH = 0.320
 
-# Only a slice of the colour wheel is on screen at any instant, and that slice
-# drifts through a full turn across the loop.  Showing every hue at once is what
-# makes RGB work look cheap; showing them in sequence keeps each frame designed.
-HUE_SPREAD = 0.18
+# A wide slice of the colour wheel is on screen at any instant, and that slice
+# drifts through a full turn across the loop, so the ring reads as a genuine
+# RGB chase rather than a single tinted glow.
+HUE_SPREAD = 0.42
 
 TEXTURE_RINGS = 320
 TEXTURE_ANGLES = 1080
@@ -316,11 +316,11 @@ class Backdrop:
         self.velocity = rng.uniform(0.35, 1.8, size=self.brightness.shape[0]).astype(np.float32)
         self.tint = self.tint[keep]
 
-        self.orbit_r = rng.uniform(0.48, 0.84, size=260).astype(np.float32)
-        self.orbit_theta = rng.random(260).astype(np.float32)
-        self.orbit_spin = rng.uniform(0.8, 2.4, size=260).astype(np.float32)
-        self.particle_hue = rng.random(260).astype(np.float32)
-        self.particle_size = rng.uniform(1.4, 4.4, size=260).astype(np.float32)
+        self.orbit_r = rng.uniform(0.48, 0.84, size=420).astype(np.float32)
+        self.orbit_theta = rng.random(420).astype(np.float32)
+        self.orbit_spin = rng.uniform(0.8, 2.4, size=420).astype(np.float32)
+        self.particle_hue = rng.random(420).astype(np.float32)
+        self.particle_size = rng.uniform(1.4, 4.4, size=420).astype(np.float32)
 
         coarse = RENDER // 16
         cloud = rng.normal(size=(coarse, coarse, 3)).astype(np.float32)
@@ -371,7 +371,7 @@ class Backdrop:
             angle = TAU * (phase * spin + theta)
             px = np.clip((centre + np.cos(angle) * radius * centre * 1.08).astype(np.int32), 1, RENDER - 2)
             py = np.clip((centre - np.sin(angle) * radius * centre * DISK_SQUASH * 1.08).astype(np.int32), 1, RENDER - 2)
-            colour = hsv_to_rgb(hue, np.array(0.68, dtype=np.float32), np.array(0.85, dtype=np.float32))
+            colour = hsv_to_rgb(hue, np.array(0.88, dtype=np.float32), np.array(0.95, dtype=np.float32))
             dust[py, px] += colour * (0.40 + 0.70 * size / self.particle_size.max())
             dust[py + 1, px] += colour * 0.32
             dust[py - 1, px] += colour * 0.32
@@ -394,8 +394,8 @@ class Sparks:
         self.orbits = rng.choice([1, 2, 3, 4, 5, 6, 7], size=count, p=[0.06, 0.16, 0.22, 0.20, 0.18, 0.12, 0.06]).astype(np.float32)
         self.phase = rng.random(count).astype(np.float32)
         self.lift = (rng.normal(scale=0.014, size=count)).astype(np.float32)
-        self.energy = (0.62 + rng.random(count) ** 2 * 2.0).astype(np.float32)
-        self.hue_offset = rng.normal(scale=0.06, size=count).astype(np.float32)
+        self.energy = (0.68 + rng.random(count) ** 2 * 2.3).astype(np.float32)
+        self.hue_offset = rng.normal(scale=0.16, size=count).astype(np.float32)
         self.size = (rng.uniform(1.2, 3.8, size=count)).astype(np.float32)
 
     def render(self, phase: float, base_hue: float) -> np.ndarray:
@@ -411,7 +411,7 @@ class Sparks:
 
             hue = base_hue + HUE_SPREAD * np.sin(angle) + self.hue_offset
             depth = 0.60 + 0.40 * (1.0 - np.sin(angle))
-            colour = hsv_to_rgb(hue, np.full_like(hue, 0.55), self.energy * depth * weight)
+            colour = hsv_to_rgb(hue, np.full_like(hue, 0.82), self.energy * depth * weight)
 
             px = np.clip((centre + u * centre).astype(np.int32), 1, RENDER - 2)
             py = np.clip((centre - v * centre).astype(np.int32), 1, RENDER - 2)
@@ -432,6 +432,70 @@ class Sparks:
 
 
 # ---------------------------------------------------------------------------
+# rainbow particles bouncing inside the event horizon
+# ---------------------------------------------------------------------------
+
+# How close to the horizon edge the particles are allowed to swing — kept well
+# inside SHADOW_RADIUS so the void's crisp black edge is never disturbed.
+CORE_LIMIT = SHADOW_RADIUS * 0.78
+
+
+class CoreParticles:
+    """A small swarm bouncing around inside the black hole itself.
+
+    Composited back in after the horizon-protection masking in `finish`, so it
+    reads as a genuine centrepiece rather than being crushed to black with
+    everything else that lands inside the shadow.
+    """
+
+    def __init__(self) -> None:
+        rng = np.random.default_rng(31337)
+        count = 70
+        self.radius_freq = rng.uniform(0.6, 2.2, size=count).astype(np.float32)
+        self.radius_phase = rng.random(count).astype(np.float32)
+        self.angle_freq = rng.uniform(0.7, 2.6, size=count).astype(np.float32)
+        self.angle_phase = rng.random(count).astype(np.float32)
+        self.radius_min = rng.uniform(0.05, 0.30, size=count).astype(np.float32)
+        self.radius_max = rng.uniform(0.55, 1.0, size=count).astype(np.float32)
+        self.hue_offset = rng.random(count).astype(np.float32)
+        self.energy = rng.uniform(0.95, 1.9, size=count).astype(np.float32)
+        self.size = rng.uniform(1.0, 2.6, size=count).astype(np.float32)
+
+    def render(self, phase: float, base_hue: float) -> np.ndarray:
+        layer = np.zeros((RENDER, RENDER, 3), dtype=np.float32)
+        centre = (RENDER - 1) / 2.0
+
+        for step, weight in ((0.0, 1.0), (-0.006, 0.45), (-0.012, 0.18)):
+            t = phase + step
+            radial = self.radius_min + (self.radius_max - self.radius_min) * (
+                0.5 + 0.5 * np.sin(TAU * (self.radius_freq * t + self.radius_phase))
+            )
+            r = CORE_LIMIT * radial
+            angle = TAU * (self.angle_freq * t + self.angle_phase)
+            u = r * np.cos(angle)
+            v = r * np.sin(angle)
+
+            hue = base_hue + self.hue_offset + 0.4 * np.sin(TAU * (t + self.angle_phase))
+            colour = hsv_to_rgb(hue, np.full_like(hue, 0.92), self.energy * weight)
+
+            px = np.clip((centre + u * centre).astype(np.int32), 1, RENDER - 2)
+            py = np.clip((centre - v * centre).astype(np.int32), 1, RENDER - 2)
+
+            size_scale = (0.6 + 0.6 * self.size)[:, None]
+            np.add.at(layer, (py, px), colour * size_scale)
+            np.add.at(layer, (py + 1, px), colour * 0.40)
+            np.add.at(layer, (py - 1, px), colour * 0.40)
+            np.add.at(layer, (py, px + 1), colour * 0.40)
+            np.add.at(layer, (py, px - 1), colour * 0.40)
+            np.add.at(layer, (py + 2, px), colour * 0.16)
+            np.add.at(layer, (py - 2, px), colour * 0.16)
+            np.add.at(layer, (py, px + 2), colour * 0.16)
+            np.add.at(layer, (py, px - 2), colour * 0.16)
+
+        return layer
+
+
+# ---------------------------------------------------------------------------
 # the frame itself
 # ---------------------------------------------------------------------------
 
@@ -441,6 +505,7 @@ class Scene:
         self.geometry = Geometry()
         self.backdrop = Backdrop(self.geometry)
         self.sparks = Sparks()
+        self.core_particles = CoreParticles()
 
         self.disk_textures = [
             filament_texture(seed=1200 + index * 37, angular_stretch=6.0, detail=14.0).ravel()
@@ -482,10 +547,10 @@ class Scene:
         # Relativistic beaming: the side sweeping toward the viewer is brighter.
         beaming = np.power(1.0 + 0.42 * np.cos(geometry.disk_angle), 1.5)
 
-        disk_intensity = geometry.disk_body * radial_falloff * density * beaming * 0.85
+        disk_intensity = geometry.disk_body * radial_falloff * density * beaming * 0.95
 
-        hue = base_hue + HUE_SPREAD * np.sin(geometry.disk_angle) + 0.05 * geometry.disk_span
-        saturation = 0.70 + 0.25 * smoothstep(0.0, 0.42, geometry.disk_span)
+        hue = base_hue + HUE_SPREAD * np.sin(geometry.disk_angle) + 0.10 * geometry.disk_span
+        saturation = 0.82 + 0.18 * smoothstep(0.0, 0.42, geometry.disk_span)
         disk_colour = hsv_to_rgb(hue, saturation, disk_intensity)
 
         image += disk_colour * geometry.near_side[..., None]
@@ -495,22 +560,22 @@ class Scene:
         halo_turbulence = self._turbulence(frame, self.halo_textures, geometry.halo_shells, geometry.halo_lookup)
         halo_density = np.exp(0.95 * halo_turbulence - 0.45)
         vertical_bias = 0.34 + 0.66 * np.abs(np.sin(geometry.screen_angle))
-        halo_intensity = geometry.halo_body * halo_density * vertical_bias * 1.00
+        halo_intensity = geometry.halo_body * halo_density * vertical_bias * 1.15
 
         halo_hue = base_hue + HUE_SPREAD * np.sin(geometry.screen_angle) + 0.04
-        image += hsv_to_rgb(halo_hue, np.full_like(halo_hue, 0.72), halo_intensity)
+        image += hsv_to_rgb(halo_hue, np.full_like(halo_hue, 0.88), halo_intensity)
 
         # --- photon ring ------------------------------------------------------
         ring_hue = base_hue + HUE_SPREAD * np.sin(geometry.screen_angle)
         ring = geometry.photon_ring * (1.0 + 0.55 * np.sin(TAU * (2 * phase + geometry.screen_angle / TAU)))
-        image += hsv_to_rgb(ring_hue, np.full_like(ring_hue, 0.28), ring * 3.0)
+        image += hsv_to_rgb(ring_hue, np.full_like(ring_hue, 0.62), ring * 3.2)
 
         # Extra energy surge to give the event horizon more life and a stronger
         # "live cooler" feel without washing out the black core.
         surge = np.exp(-(((geometry.screen_radius - 0.43) / 0.05) ** 2)) * (
             0.58 + 0.42 * np.sin(TAU * (phase * 2.0 + geometry.screen_angle * 2.0))
         )
-        image += hsv_to_rgb(base_hue + 0.12, np.full_like(surge, 0.70), surge * 1.75)
+        image += hsv_to_rgb(base_hue + 0.12, np.full_like(surge, 0.85), surge * 1.95)
 
         # A deeper, more luxurious core — the black center stays dark but with a
         # slow, elegant kaleidoscopic pulse to keep the centerpiece alive.
@@ -526,7 +591,7 @@ class Scene:
         image -= void_mask[..., None] * 0.18
         image += hsv_to_rgb(
             0.63 + 0.13 * np.sin(TAU * (phase + geometry.screen_angle * 1.3)),
-            np.full_like(void_aureole, 0.42),
+            np.full_like(void_aureole, 0.65),
             (void_aureole * 0.22 + void_pattern * 0.30),
         )
         image *= (1.0 - geometry.shadow * 0.985)[..., None]
@@ -534,7 +599,11 @@ class Scene:
         # --- sparks -----------------------------------------------------------
         image += self.sparks.render(phase, base_hue)
 
-        return image
+        # Rendered separately so it survives the horizon-protection masking in
+        # `finish` instead of being crushed to black with the rest of the void.
+        core_layer = self.core_particles.render(phase, base_hue) * geometry.shadow[..., None]
+
+        return image, core_layer
 
 
 # ---------------------------------------------------------------------------
@@ -570,10 +639,12 @@ def chromatic_aberration(image: np.ndarray, geometry: Geometry) -> np.ndarray:
     return result
 
 
-def finish(image: np.ndarray, geometry: Geometry, frame: int) -> np.ndarray:
+def finish(image: np.ndarray, core_layer: np.ndarray, geometry: Geometry, frame: int) -> np.ndarray:
     image = image + bloom(image) + anamorphic(image)
-    # Glow must not creep back over the horizon — the void stays void.
+    # Glow must not creep back over the horizon — the void stays void, except
+    # for the core particles, added back in after the void is protected.
     image *= (1.0 - geometry.shadow * 0.94)[..., None]
+    image += core_layer
     image = chromatic_aberration(image, geometry)
     image *= geometry.vignette[..., None]
 
@@ -687,7 +758,8 @@ def main() -> None:
         args.preview.mkdir(parents=True, exist_ok=True)
         for frame in args.preview_frames:
             source = 0 if frame == FRAMES - 1 else frame
-            pixels = finish(scene.render(source), scene.geometry, source)
+            image, core_layer = scene.render(source)
+            pixels = finish(image, core_layer, scene.geometry, source)
             Image.fromarray(pixels).save(args.preview / f"v14_{frame:03d}.png")
             print(f"preview frame {frame}")
         return
@@ -697,7 +769,8 @@ def main() -> None:
             source = 0 if frame == FRAMES - 1 else frame
             if frame % 30 == 0:
                 print(f"  frame {frame}/{FRAMES}", flush=True)
-            yield finish(scene.render(source), scene.geometry, source)
+            image, core_layer = scene.render(source)
+            yield finish(image, core_layer, scene.geometry, source)
 
     args.root.mkdir(parents=True, exist_ok=True)
     video = args.root / "aven-v14-event-horizon.webm"
