@@ -509,8 +509,12 @@ class Scene:
         # a faint ring of cool indigo around it to sharpen the centerpiece.
         void_mask = np.exp(-(((geometry.screen_radius - 0.10) / 0.080) ** 2))
         void_aureole = np.exp(-(((geometry.screen_radius - 0.18) / 0.022) ** 2))
-        image -= void_mask * 0.18
-        image += hsv_to_rgb(0.63 + 0.06 * np.sin(TAU * phase), np.full_like(void_aureole, 0.28), void_aureole * 0.23)
+        image -= void_mask[..., None] * 0.18
+        image += hsv_to_rgb(
+            0.63 + 0.06 * np.sin(TAU * phase),
+            np.full_like(void_aureole, 0.28),
+            void_aureole * 0.23,
+        )
         image *= (1.0 - geometry.shadow * 0.985)[..., None]
 
         # --- sparks -----------------------------------------------------------
