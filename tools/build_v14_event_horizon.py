@@ -542,10 +542,25 @@ def finish(image: np.ndarray, geometry: Geometry, frame: int) -> np.ndarray:
     image = aces_tonemap(image * 0.80)
     image = linear_to_srgb(image)
 
-    rng = np.random.default_rng(20_000 + frame)
+    # Keep the loop seamless: grain must be phase-locked, not seeded by the
+    # absolute frame index. Using a fixed RNG seed makes the final frame match
+    # the first frame when the animation wraps around.
+    rng = np.random.default_rng(20_000)
+    phase = (frame / FRAMES) * TAU
     luminance = image.mean(axis=-1, keepdims=True)
     grain_weight = 0.016 * (1.0 - np.abs(luminance * 2.0 - 1.0))
-    image += rng.normal(scale=1.0, size=image.shape).astype(np.float32) * grain_weight
+
+    # A deterministic, low-frequency noise field tied to the current phase keeps
+    # the wrap continuous while still giving the image some fine texture.
+    y = np.arange(RENDER, dtype=np.float32)[:, None]
+    x = np.arange(RENDER, dtype=np.float32)[None, :]
+    noise = (
+        np.sin((x + 1.73 * y + phase) * 0.27)
+        + np.cos((x * 0.63 - y * 0.91 + phase * 2.1) * 0.41)
+        + np.sin((x * 0.19 + y * 0.73 - phase * 1.7) * 0.94)
+    )
+    noise = np.broadcast_to(noise[..., None], image.shape).astype(np.float32)
+    image += (rng.normal(size=image.shape).astype(np.float32) * 0.75 + noise * 0.25) * grain_weight
     image += rng.uniform(-0.5 / 255.0, 0.5 / 255.0, size=image.shape).astype(np.float32)
 
     image = np.clip(image, 0.0, 1.0)
