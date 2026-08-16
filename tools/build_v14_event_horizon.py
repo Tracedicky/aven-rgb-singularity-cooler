@@ -313,7 +313,7 @@ class Backdrop:
 
         self.orbit_r = rng.uniform(0.48, 0.84, size=260).astype(np.float32)
         self.orbit_theta = rng.random(260).astype(np.float32)
-        self.orbit_spin = rng.integers(1, 8, size=260).astype(np.float32)
+        self.orbit_spin = rng.uniform(0.8, 2.4, size=260).astype(np.float32)
         self.particle_hue = rng.random(260).astype(np.float32)
         self.particle_size = rng.uniform(1.4, 4.4, size=260).astype(np.float32)
 
@@ -382,30 +382,31 @@ class Sparks:
         layer = np.zeros((RENDER, RENDER, 3), dtype=np.float32)
         centre = (RENDER - 1) / 2.0
 
-        angle = TAU * (self.orbits * phase + self.phase)
-        u = self.radius * np.cos(angle)
-        v = self.radius * np.sin(angle) * DISK_SQUASH + self.lift
+        for step, weight in ((0.0, 1.0), (-0.006, 0.48), (-0.012, 0.20), (0.010, 0.26)):
+            angle = TAU * (self.orbits * (phase + step) + self.phase)
+            u = self.radius * np.cos(angle)
+            v = self.radius * np.sin(angle) * DISK_SQUASH + self.lift
 
-        visible = ~((np.hypot(u, v) < SHADOW_RADIUS) & (np.sin(angle) > 0))
+            visible = ~((np.hypot(u, v) < SHADOW_RADIUS) & (np.sin(angle) > 0))
 
-        hue = base_hue + HUE_SPREAD * np.sin(angle) + self.hue_offset
-        depth = 0.60 + 0.40 * (1.0 - np.sin(angle))
-        colour = hsv_to_rgb(hue, np.full_like(hue, 0.55), self.energy * depth)
+            hue = base_hue + HUE_SPREAD * np.sin(angle) + self.hue_offset
+            depth = 0.60 + 0.40 * (1.0 - np.sin(angle))
+            colour = hsv_to_rgb(hue, np.full_like(hue, 0.55), self.energy * depth * weight)
 
-        px = np.clip((centre + u * centre).astype(np.int32), 1, RENDER - 2)
-        py = np.clip((centre - v * centre).astype(np.int32), 1, RENDER - 2)
-        px, py, colour = px[visible], py[visible], colour[visible]
+            px = np.clip((centre + u * centre).astype(np.int32), 1, RENDER - 2)
+            py = np.clip((centre - v * centre).astype(np.int32), 1, RENDER - 2)
+            px, py, colour = px[visible], py[visible], colour[visible]
 
-        size_scale = (1.0 + 0.5 * self.size[visible])[:, None]
-        np.add.at(layer, (py, px), colour * size_scale)
-        np.add.at(layer, (py + 1, px), colour * 0.32)
-        np.add.at(layer, (py - 1, px), colour * 0.32)
-        np.add.at(layer, (py, px + 1), colour * 0.32)
-        np.add.at(layer, (py, px - 1), colour * 0.32)
-        np.add.at(layer, (py + 2, px), colour * 0.15)
-        np.add.at(layer, (py - 2, px), colour * 0.15)
-        np.add.at(layer, (py, px + 2), colour * 0.15)
-        np.add.at(layer, (py, px - 2), colour * 0.15)
+            size_scale = (1.0 + 0.5 * self.size[visible])[:, None]
+            np.add.at(layer, (py, px), colour * size_scale)
+            np.add.at(layer, (py + 1, px), colour * 0.32)
+            np.add.at(layer, (py - 1, px), colour * 0.32)
+            np.add.at(layer, (py, px + 1), colour * 0.32)
+            np.add.at(layer, (py, px - 1), colour * 0.32)
+            np.add.at(layer, (py + 2, px), colour * 0.15)
+            np.add.at(layer, (py - 2, px), colour * 0.15)
+            np.add.at(layer, (py, px + 2), colour * 0.15)
+            np.add.at(layer, (py, px - 2), colour * 0.15)
 
         return layer
 
@@ -592,8 +593,9 @@ def write_payload(video: Path, folder: Path, chunk: int = 1_400_000) -> int:
 
 
 def write_page(root: Path, part_count: int) -> None:
+    version = "v14-event-horizon-20260816"
     scripts = "\n".join(
-        f'  <script src="singularity-v14/video-v14-part-{number:02d}.js"></script>'
+        f'  <script src="singularity-v14/video-v14-part-{number:02d}.js?v={version}"></script>'
         for number in range(1, part_count + 1)
     )
     root.joinpath("index.html").write_text(
