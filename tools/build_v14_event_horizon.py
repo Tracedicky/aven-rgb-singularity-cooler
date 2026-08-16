@@ -313,7 +313,7 @@ class Backdrop:
 
         self.orbit_r = rng.uniform(0.48, 0.84, size=260).astype(np.float32)
         self.orbit_theta = rng.random(260).astype(np.float32)
-        self.orbit_spin = rng.uniform(0.8, 2.4, size=260).astype(np.float32)
+        self.orbit_spin = rng.integers(1, 8, size=260).astype(np.float32)
         self.particle_hue = rng.random(260).astype(np.float32)
         self.particle_size = rng.uniform(1.4, 4.4, size=260).astype(np.float32)
 
@@ -382,31 +382,30 @@ class Sparks:
         layer = np.zeros((RENDER, RENDER, 3), dtype=np.float32)
         centre = (RENDER - 1) / 2.0
 
-        for step, weight in ((0.0, 1.0), (-0.006, 0.48), (-0.012, 0.20), (0.010, 0.26)):
-            angle = TAU * (self.orbits * (phase + step) + self.phase)
-            u = self.radius * np.cos(angle)
-            v = self.radius * np.sin(angle) * DISK_SQUASH + self.lift
+        angle = TAU * (self.orbits * phase + self.phase)
+        u = self.radius * np.cos(angle)
+        v = self.radius * np.sin(angle) * DISK_SQUASH + self.lift
 
-            visible = ~((np.hypot(u, v) < SHADOW_RADIUS) & (np.sin(angle) > 0))
+        visible = ~((np.hypot(u, v) < SHADOW_RADIUS) & (np.sin(angle) > 0))
 
-            hue = base_hue + HUE_SPREAD * np.sin(angle) + self.hue_offset
-            depth = 0.60 + 0.40 * (1.0 - np.sin(angle))
-            colour = hsv_to_rgb(hue, np.full_like(hue, 0.55), self.energy * depth * weight)
+        hue = base_hue + HUE_SPREAD * np.sin(angle) + self.hue_offset
+        depth = 0.60 + 0.40 * (1.0 - np.sin(angle))
+        colour = hsv_to_rgb(hue, np.full_like(hue, 0.55), self.energy * depth)
 
-            px = np.clip((centre + u * centre).astype(np.int32), 1, RENDER - 2)
-            py = np.clip((centre - v * centre).astype(np.int32), 1, RENDER - 2)
-            px, py, colour = px[visible], py[visible], colour[visible]
+        px = np.clip((centre + u * centre).astype(np.int32), 1, RENDER - 2)
+        py = np.clip((centre - v * centre).astype(np.int32), 1, RENDER - 2)
+        px, py, colour = px[visible], py[visible], colour[visible]
 
-            size_scale = (1.0 + 0.5 * self.size[visible])[:, None]
-            np.add.at(layer, (py, px), colour * size_scale)
-            np.add.at(layer, (py + 1, px), colour * 0.32)
-            np.add.at(layer, (py - 1, px), colour * 0.32)
-            np.add.at(layer, (py, px + 1), colour * 0.32)
-            np.add.at(layer, (py, px - 1), colour * 0.32)
-            np.add.at(layer, (py + 2, px), colour * 0.15)
-            np.add.at(layer, (py - 2, px), colour * 0.15)
-            np.add.at(layer, (py, px + 2), colour * 0.15)
-            np.add.at(layer, (py, px - 2), colour * 0.15)
+        size_scale = (1.0 + 0.5 * self.size[visible])[:, None]
+        np.add.at(layer, (py, px), colour * size_scale)
+        np.add.at(layer, (py + 1, px), colour * 0.32)
+        np.add.at(layer, (py - 1, px), colour * 0.32)
+        np.add.at(layer, (py, px + 1), colour * 0.32)
+        np.add.at(layer, (py, px - 1), colour * 0.32)
+        np.add.at(layer, (py + 2, px), colour * 0.15)
+        np.add.at(layer, (py - 2, px), colour * 0.15)
+        np.add.at(layer, (py, px + 2), colour * 0.15)
+        np.add.at(layer, (py, px - 2), colour * 0.15)
 
         return layer
 
@@ -451,7 +450,7 @@ class Scene:
 
         # --- accretion disk -------------------------------------------------
         turbulence = self._turbulence(frame, self.disk_textures, geometry.disk_shells, geometry.disk_lookup)
-        sparkle_offset = (7 * self.step * frame) % TEXTURE_ANGLES
+        sparkle_offset = int(round(7 * self.step * frame)) % TEXTURE_ANGLES
         sparkle = np.roll(
             self.shimmer.reshape(TEXTURE_RINGS, TEXTURE_ANGLES), sparkle_offset, axis=1
         ).ravel()[geometry.disk_lookup].reshape(RENDER, RENDER)
@@ -488,7 +487,7 @@ class Scene:
         # Extra energy surge to give the event horizon more life and a stronger
         # "live cooler" feel without washing out the black core.
         surge = np.exp(-(((geometry.screen_radius - 0.43) / 0.05) ** 2)) * (
-            0.58 + 0.42 * np.sin(TAU * (phase * 2.4 + geometry.screen_angle * 2.0))
+            0.58 + 0.42 * np.sin(TAU * (phase * 2.0 + geometry.screen_angle * 2.0))
         )
         image += hsv_to_rgb(base_hue + 0.12, np.full_like(surge, 0.70), surge * 1.75)
         image *= (1.0 - geometry.shadow * 0.985)[..., None]
@@ -542,25 +541,10 @@ def finish(image: np.ndarray, geometry: Geometry, frame: int) -> np.ndarray:
     image = aces_tonemap(image * 0.80)
     image = linear_to_srgb(image)
 
-    # Keep the loop seamless: grain must be phase-locked, not seeded by the
-    # absolute frame index. Using a fixed RNG seed makes the final frame match
-    # the first frame when the animation wraps around.
-    rng = np.random.default_rng(20_000)
-    phase = (frame / FRAMES) * TAU
+    rng = np.random.default_rng(20_000 + frame)
     luminance = image.mean(axis=-1, keepdims=True)
     grain_weight = 0.016 * (1.0 - np.abs(luminance * 2.0 - 1.0))
-
-    # A deterministic, low-frequency noise field tied to the current phase keeps
-    # the wrap continuous while still giving the image some fine texture.
-    y = np.arange(RENDER, dtype=np.float32)[:, None]
-    x = np.arange(RENDER, dtype=np.float32)[None, :]
-    noise = (
-        np.sin((x + 1.73 * y + phase) * 0.27)
-        + np.cos((x * 0.63 - y * 0.91 + phase * 2.1) * 0.41)
-        + np.sin((x * 0.19 + y * 0.73 - phase * 1.7) * 0.94)
-    )
-    noise = np.broadcast_to(noise[..., None], image.shape).astype(np.float32)
-    image += (rng.normal(size=image.shape).astype(np.float32) * 0.75 + noise * 0.25) * grain_weight
+    image += rng.normal(scale=1.0, size=image.shape).astype(np.float32) * grain_weight
     image += rng.uniform(-0.5 / 255.0, 0.5 / 255.0, size=image.shape).astype(np.float32)
 
     image = np.clip(image, 0.0, 1.0)
